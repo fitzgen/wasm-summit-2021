@@ -1,0 +1,6 @@
+[workspace]
+members = [
+  "benchmarks",
+  "hello",
+  "spelling-corrector",
+]
