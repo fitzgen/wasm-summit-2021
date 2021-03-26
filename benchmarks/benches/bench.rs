@@ -1,5 +1,6 @@
 use criterion::*;
 use std::path::Path;
+use std::time::Instant;
 
 fn wasi_engine(strategy: wasmtime::InstanceAllocationStrategy) -> wasmtime::Engine {
     let mut config = wasmtime::Config::new();
@@ -91,7 +92,7 @@ fn instantiate(c: &mut Criterion) {
         wasmtime::InstanceAllocationStrategy::Pooling {
             strategy: wasmtime::PoolingAllocationStrategy::NextAvailable,
             module_limits: wasmtime::ModuleLimits {
-                memory_pages: 17,
+                memory_pages: 18,
                 ..Default::default()
             },
             instance_limits: Default::default(),
@@ -101,14 +102,20 @@ fn instantiate(c: &mut Criterion) {
     });
 
     group.bench_function("instantiate", |b| {
-        let wasm = std::fs::read("../hello/hello.wasm").unwrap();
+        let wasm = std::fs::read("../markdown/markdown.wasm").unwrap();
         let module = wasmtime::Module::new(&engine, &wasm).unwrap();
-        b.iter(|| {
-            let linker = wasi_linker(&engine);
-            for _ in 0..RUNS {
-                let instance = linker.instantiate(&module).unwrap();
-                criterion::black_box(instance);
+        b.iter_custom(|iters| {
+            let mut elapsed = Default::default();
+            for _ in 0..iters {
+                let linker = wasi_linker(&engine);
+                let start = Instant::now();
+                for _ in 0..RUNS {
+                    let instance = linker.instantiate(&module).unwrap();
+                    criterion::black_box(instance);
+                }
+                elapsed += start.elapsed();
             }
+            elapsed
         });
     });
 }
