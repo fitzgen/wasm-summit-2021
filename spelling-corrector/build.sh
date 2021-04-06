@@ -39,3 +39,8 @@ cp ../target/wasm32-wasi/release/spelling-corrector.opt.wizer.opt.wasm wizer.was
 
 wasmtime run --dir . control.wasm funciton
 wasmtime run         wizer.wasm   funciton
+
+### Report Sizes
+
+brotli -9 --stdout < control.wasm | wc -c
+brotli -9 --stdout < wizer.wasm | wc -c

@@ -6,6 +6,8 @@ fn wasi_engine(strategy: wasmtime::InstanceAllocationStrategy) -> wasmtime::Engi
     let mut config = wasmtime::Config::new();
 
     config.allocation_strategy(strategy);
+    // config.profiler(wasmtime::ProfilingStrategy::JitDump).unwrap();
+    // config.debug_info(true);
 
     wasmtime_wasi::Wasi::add_to_config(&mut config);
     wasmtime::Engine::new(&config).unwrap()
@@ -53,7 +55,18 @@ fn spelling_corrector(c: &mut Criterion) {
     let mut group = c.benchmark_group("spelling-corrector");
     group.throughput(Throughput::Elements(RUNS));
 
-    let engine = wasi_engine(wasmtime::InstanceAllocationStrategy::OnDemand);
+    let engine = wasi_engine(if cfg!(feature = "uffd") {
+        wasmtime::InstanceAllocationStrategy::Pooling {
+            strategy: wasmtime::PoolingAllocationStrategy::NextAvailable,
+            module_limits: wasmtime::ModuleLimits {
+                memory_pages: 554,
+                ..Default::default()
+            },
+            instance_limits: Default::default(),
+        }
+    } else {
+        wasmtime::InstanceAllocationStrategy::OnDemand
+    });
 
     group.bench_function("control", |b| {
         let wasm = std::fs::read("../spelling-corrector/control.wasm").unwrap();
