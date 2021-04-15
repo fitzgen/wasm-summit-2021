@@ -9,5 +9,5 @@ members = [
 # [profile.bench]
 # debug = true
 
-# [patch.crates-io]
-# wasmtime = { path = "../wasmtime/crates/wasmtime" }
+[patch.crates-io]
+wasmtime = { git = "https://github.com/bytecodealliance/wasmtime.git" }
