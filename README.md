@@ -23,4 +23,4 @@ guts of a WebAssembly module: memories, globals, tables, etc.
 
 ## Recording
 
-TODO
+[![](./video-thumbnail.png)](https://www.youtube.com/watch?v=C6pcWRpHWG0)
